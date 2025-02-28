@@ -1,11 +1,13 @@
 module.exports = function (api) {
-  api.cache(true);
+  api.cache(false);
   return {
-    presets: ["babel-preset-expo"],
+    presets: [
+      ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+      'nativewind/babel',
+    ],
     plugins: [
-      "react-native-reanimated/plugin",
-      "@babel/plugin-transform-export-namespace-from",
-      require.resolve('expo-router/babel'),
+      'react-native-reanimated/plugin',
+      '@babel/plugin-transform-export-namespace-from',
     ],
   };
-}
+};

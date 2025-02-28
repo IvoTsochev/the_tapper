@@ -1,33 +1,83 @@
-import { View, Text, Switch, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import { useState } from 'react';
+import {
+  View,
+  Text,
+  Switch,
+  TouchableOpacity,
+  useColorScheme,
+  Appearance,
+} from 'react-native';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [haptics, setHaptics] = useState(true);
   const [sound, setSound] = useState(true);
 
+  useEffect(() => {
+    const loadTheme = async () => {
+      const savedTheme = await AsyncStorage.getItem('theme');
+      if (savedTheme) {
+        setTheme(savedTheme as 'light' | 'dark' | 'system');
+      }
+    };
+    loadTheme();
+  }, []);
+
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    await AsyncStorage.setItem('theme', newTheme);
+    Appearance.setColorScheme(newTheme);
+  };
+
+  const currentTheme = theme === 'system' ? colorScheme : theme;
+
   return (
-    <View style={[
-      styles.container,
-      { backgroundColor: colorScheme === 'dark' ? '#111827' : '#FFFFFF' }
-    ]}>
-      <Text style={[
-        styles.title,
-        { color: colorScheme === 'dark' ? '#FFFFFF' : '#111827' }
-      ]}>
+    <View
+      className={`flex-1 p-6 ${
+        currentTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
+      }`}
+    >
+      <Text
+        className={`text-3xl font-bold mb-6 ${
+          currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}
+      >
         Settings
       </Text>
-      
-      <View style={styles.settingsContainer}>
-        <View style={[
-          styles.card,
-          { backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#F3F4F6' }
-        ]}>
-          <View style={styles.setting}>
-            <Text style={[
-              styles.settingText,
-              { color: colorScheme === 'dark' ? '#FFFFFF' : '#111827' }
-            ]}>
+
+      <View className="space-y-4">
+        <View
+          className={`p-4 rounded-lg ${
+            currentTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+          }`}
+        >
+          {/* Dark Mode Toggle */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text
+              className={`text-lg font-semibold ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}
+            >
+              Dark Mode
+            </Text>
+            <Switch
+              value={theme === 'dark'}
+              onValueChange={toggleTheme}
+              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              thumbColor={theme === 'dark' ? '#2563eb' : '#f4f3f4'}
+            />
+          </View>
+
+          {/* Haptic Feedback Toggle */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text
+              className={`text-lg font-semibold ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}
+            >
               Haptic Feedback
             </Text>
             <Switch
@@ -37,12 +87,14 @@ export default function SettingsScreen() {
               thumbColor={haptics ? '#2563eb' : '#f4f3f4'}
             />
           </View>
-          
-          <View style={styles.setting}>
-            <Text style={[
-              styles.settingText,
-              { color: colorScheme === 'dark' ? '#FFFFFF' : '#111827' }
-            ]}>
+
+          {/* Sound Effects Toggle */}
+          <View className="flex-row items-center justify-between">
+            <Text
+              className={`text-lg font-semibold ${
+                currentTheme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}
+            >
               Sound Effects
             </Text>
             <Switch
@@ -53,12 +105,10 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
-        
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={() => {}}
-        >
-          <Text style={styles.resetButtonText}>
+
+        {/* Reset Button */}
+        <TouchableOpacity className="bg-red-500 p-4 rounded-lg mt-4 active:bg-red-600">
+          <Text className="text-white text-center font-semibold text-lg">
             Reset All Data
           </Text>
         </TouchableOpacity>
@@ -66,44 +116,3 @@ export default function SettingsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 24,
-  },
-  settingsContainer: {
-    gap: 16,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 8,
-    gap: 16,
-  },
-  setting: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  settingText: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  resetButton: {
-    backgroundColor: '#EF4444',
-    padding: 16,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  resetButtonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontSize: 18,
-  },
-});
